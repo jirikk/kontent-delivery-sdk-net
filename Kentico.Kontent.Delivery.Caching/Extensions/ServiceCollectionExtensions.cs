@@ -31,27 +31,7 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
                  .Decorate<IDeliveryClient, DeliveryClientCache>();
         }
 
-        /// <summary>
-        ///  Registers a delegate that will be used to configure a cached <see cref="IDeliveryClient"/>.
-        /// </summary>
-        /// <param name="services">A <see cref="IServiceCollection"/> instance for registering and resolving dependencies.</param>
-        /// <param name="name">A name of named client which want to use cached <see cref="IDeliveryClient"/></param>
-        /// <param name="options">A <see cref="DeliveryCacheOptions"/> instance. </param> 
-        /// <returns>The <paramref name="services"/> instance with cache services registered in it</returns>
-        public static IServiceCollection AddDeliveryClientCache(this IServiceCollection services, string name, DeliveryCacheOptions options)
-        {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options), "The Delivery cache  options object is not specified.");
-            }
-
-            return services
-                .RegisterCacheOptions(options, name)
-                .RegisterDependencies(options.CacheType, name)
-                .Decorate<IDeliveryClientFactory, DeliveryClientCacheFactory>();
-        }
-
-        private static IServiceCollection RegisterCacheOptions(this IServiceCollection services, DeliveryCacheOptions options, string name = null)
+        internal static IServiceCollection RegisterCacheOptions(this IServiceCollection services, DeliveryCacheOptions options, string name = null)
         {
             if (name == null)
             {
@@ -65,7 +45,7 @@ namespace Kentico.Kontent.Delivery.Caching.Extensions
             return services;
         }
 
-        private static IServiceCollection RegisterDependencies(this IServiceCollection services, CacheTypeEnum cacheType, string name = null)
+        internal static IServiceCollection RegisterDependencies(this IServiceCollection services, CacheTypeEnum cacheType, string name = null)
         {
             switch (cacheType)
             {

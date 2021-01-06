@@ -22,59 +22,6 @@ namespace Kentico.Kontent.Delivery.Extensions
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
-        /// </summary>
-        ///<param name="name">The name of the client configuration</param>
-        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
-        /// <param name="buildDeliveryOptions">A function that is provided with an instance of <see cref="DeliveryOptionsBuilder"/>and expected to return a valid instance of <see cref="DeliveryOptions"/>.</param>
-        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
-        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions)
-        {
-            if (buildDeliveryOptions == null)
-            {
-                throw new ArgumentNullException(nameof(buildDeliveryOptions), "The function for creating Delivery options is null.");
-            }
-
-            return services
-                .BuildOptions(buildDeliveryOptions, name)
-                .RegisterDependencies();
-        }
-
-        /// <summary>
-        /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
-        /// </summary>
-        ///<param name="name">The name of the client configuration</param>
-        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
-        /// <param name="deliveryOptions">A <see cref="DeliveryOptions"/> instance.  Options themselves are not further validated (see <see cref="DeliveryOptionsValidator.Validate"/>).</param>
-        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
-        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, DeliveryOptions deliveryOptions)
-        {
-            if (deliveryOptions == null)
-            {
-                throw new ArgumentNullException(nameof(deliveryOptions), "The Delivery options object is not specified.");
-            }
-
-            return services
-                .RegisterOptions(deliveryOptions, name)
-                .RegisterDependencies();
-        }
-
-        /// <summary>
-        /// Registers a delegate that will be used to configure a named <see cref="IDeliveryClient"/> via <see cref="IDeliveryClientFactory"/>
-        /// </summary>
-        /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
-        /// <param name="name">The name of the client configuration</param>
-        /// <param name="configuration">A set of key/value application configuration properties.</param>
-        /// <param name="configurationSectionName">The section name of the configuration that keeps the <see cref="DeliveryOptions"/> properties. The default value is DeliveryOptions.</param>
-        /// <returns>The <paramref name="services"/> instance with <see cref="IDeliveryClient"/> registered in it</returns>
-        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, string name, IConfiguration configuration, string configurationSectionName = "DeliveryOptions")
-        {
-            return services
-                .Configure<DeliveryOptions>(name, configuration.GetSection(configurationSectionName))
-                .RegisterDependencies();
-        }
-
-        /// <summary>
         /// Registers a <see cref="IDeliveryClient"/> instance to an <see cref="IDeliveryClient"/> interface in <see cref="ServiceCollection"/>.
         /// </summary>
         /// <param name="services">A <see cref="ServiceCollection"/> instance for registering and resolving dependencies.</param>
@@ -159,7 +106,7 @@ namespace Kentico.Kontent.Delivery.Extensions
         private static ITypelessInlineContentItemsResolver CreateDescriptor<TContentItem>(this IServiceProvider provider)
             => TypelessInlineContentItemsResolver.Create(provider.GetService<IInlineContentItemsResolver<TContentItem>>());
 
-        private static IServiceCollection RegisterDependencies(this IServiceCollection services)
+        internal static IServiceCollection RegisterDependencies(this IServiceCollection services)
         {
             services.TryAddSingleton<IContentLinkUrlResolver, DefaultContentLinkUrlResolver>();
             services.TryAddSingleton<ITypeProvider, TypeProvider>();
@@ -180,7 +127,7 @@ namespace Kentico.Kontent.Delivery.Extensions
         }
 
         // Options here are not validated on purpose, it is left to users to validate them if they want to.
-        private static IServiceCollection RegisterOptions(this IServiceCollection services, DeliveryOptions options, string name = null)
+        internal static IServiceCollection RegisterOptions(this IServiceCollection services, DeliveryOptions options, string name = null)
         {
             if (name == null)
             {
@@ -200,7 +147,7 @@ namespace Kentico.Kontent.Delivery.Extensions
                     ? configuration
                     : configuration.GetSection(configurationSectionName));
 
-        private static IServiceCollection BuildOptions(this IServiceCollection services, Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions, string name = null)
+        internal static IServiceCollection BuildOptions(this IServiceCollection services, Func<IDeliveryOptionsBuilder, DeliveryOptions> buildDeliveryOptions, string name = null)
         {
             var builder = DeliveryOptionsBuilder.CreateInstance();
             var options = buildDeliveryOptions(builder);

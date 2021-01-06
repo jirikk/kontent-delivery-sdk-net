@@ -1,4 +1,5 @@
 ﻿using Kentico.Kontent.Delivery.Abstractions;
+using Kentico.Kontent.Delivery.Caching;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,36 +7,29 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Concurrent;
 
-namespace Kentico.Kontent.Delivery.Caching
+namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
 {
-    /// <summary>
-    /// A factory class for <see cref="IDeliveryCacheManager"/>
-    /// </summary>
-    public class DeliveryClientCacheFactory : IDeliveryClientFactory
+    internal class DeliveryClientCacheFactory : IDeliveryClientFactory
     {
-        private readonly IDeliveryClientFactory _innerClientFactory;
         private readonly IOptionsMonitor<DeliveryCacheOptions> _deliveryCacheOptions;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IDeliveryClientFactory _innerDeliveryClientFactory;
         private readonly ConcurrentDictionary<string, IDeliveryClient> _cache = new ConcurrentDictionary<string, IDeliveryClient>();
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClientCacheFactory"/> class.
         /// </summary>
-        /// <param name="clientFactory">Factory to be decorated.</param>
+        /// <param name="deliveryClientFactory">Factory to be decorated.</param>
         /// <param name="deliveryCacheOptions">Cache configuration options.</param>
         /// <param name="serviceProvider">An <see cref="IServiceProvider"/> instance.</param>
-        public DeliveryClientCacheFactory(IDeliveryClientFactory clientFactory, IOptionsMonitor<DeliveryCacheOptions> deliveryCacheOptions, IServiceProvider serviceProvider)
+        public DeliveryClientCacheFactory(IDeliveryClientFactory deliveryClientFactory, IOptionsMonitor<DeliveryCacheOptions> deliveryCacheOptions, IServiceProvider serviceProvider)
         {
-            _innerClientFactory = clientFactory;
             _deliveryCacheOptions = deliveryCacheOptions;
             _serviceProvider = serviceProvider;
+            _innerDeliveryClientFactory = deliveryClientFactory;
         }
 
-        /// <summary>
-        /// Returns a named instance of the <see cref="IDeliveryClient"/> wrapped in a caching layer.
-        /// </summary>
-        /// <param name="name">A name of the configuration to be used to instantiate the client.</param>
-        /// <returns>Returns an <see cref="IDeliveryClient"/> instance with the given name.</returns>
         public IDeliveryClient Get(string name)
         {
             if (name == null)
@@ -45,7 +39,7 @@ namespace Kentico.Kontent.Delivery.Caching
 
             if (!_cache.TryGetValue(name, out var client))
             {
-                client = _innerClientFactory.Get(name);
+                client = _innerDeliveryClientFactory.Get(name);
                 var cacheOptions = _deliveryCacheOptions.Get(name);
                 if (cacheOptions.Name == name)
                 {
@@ -72,10 +66,6 @@ namespace Kentico.Kontent.Delivery.Caching
             return client;
         }
 
-        /// <inheritdoc />
-        public IDeliveryClient Get()
-        {
-            return _innerClientFactory.Get();
-        }
+        public IDeliveryClient Get() => _innerDeliveryClientFactory.Get();
     }
 }
