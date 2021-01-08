@@ -16,7 +16,6 @@ namespace Kentico.Kontent.Delivery.Extensions.DependencyInjection
         private readonly IDeliveryClientFactory _innerDeliveryClientFactory;
         private readonly ConcurrentDictionary<string, IDeliveryClient> _cache = new ConcurrentDictionary<string, IDeliveryClient>();
 
-
         /// <summary>
         /// Initializes a new instance of the <see cref="DeliveryClientCacheFactory"/> class.
         /// </summary>
